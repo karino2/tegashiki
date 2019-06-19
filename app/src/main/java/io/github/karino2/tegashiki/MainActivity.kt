@@ -63,13 +63,14 @@ class MainActivity : AppCompatActivity() {
         res
     }
 
-    val outputTensor = KdFTensor(1*MAX_TOKEN_LEN*VOCAB_SIZE)
+    val outputTensor = KdFTensor(1*MAX_TOKEN_LEN*VOCAB_SIZE).apply { shape = arrayOf(MAX_TOKEN_LEN, VOCAB_SIZE)}
 
     fun onButtonClick(v: View) {
         outputTensor.byteBuffer.rewind()
         interpreter.runForMultipleInputsOutputs(arrayOf(inputDecoder.toByteBuf(), inputStroke.toByteBuf()), mapOf(0 to outputTensor.byteBuffer))
-        val outputArr = outputTensor.toFloatArray()
-        Log.d("Tegashiki", outputArr.toString())
+        outputTensor.readToArray()
+        val res = outputTensor.argMaxEachRaw.toList()
+        Log.d("Tegashiki", res.toString())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
