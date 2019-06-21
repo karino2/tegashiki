@@ -16,6 +16,10 @@ object AllIndex : ShapeIndex()
 class Shape(vararg val shape: Int) {
     operator fun get(i : Int) = shape[i]
 
+    fun clone() : Shape {
+        return Shape(*shape)
+    }
+
     val size = shape.size
 
     val elementNum

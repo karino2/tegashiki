@@ -54,6 +54,13 @@ class StrokeCanvas(context: Context, attrs: AttributeSet) : View(context, attrs)
         offscreenBitmap.eraseColor(Color.WHITE)
     }
 
+    fun clearCanvas() {
+        offscreenBitmap.eraseColor(Color.WHITE)
+        undoList.clear()
+        xyList.clear()
+        invalidate()
+    }
+
     override fun onDraw(canvas: Canvas) {
         canvas.drawColor(-0x1)
 
@@ -77,6 +84,11 @@ class StrokeCanvas(context: Context, attrs: AttributeSet) : View(context, attrs)
         var currentPos = -1
 
         val COMMAND_MAX_SIZE = 1024 * 1024 // 1M
+
+        fun clear() {
+            currentPos = -1
+            commandList.clear()
+        }
 
         val commandsSize: Int
             get() {

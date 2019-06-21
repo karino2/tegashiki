@@ -34,10 +34,29 @@ class KdFTensor(val size: Int) {
     // default [size].
     var shape = Shape(size)
 
-    fun reshape(vararg shapes: Int) : KdFTensor{
-        val newShape = Shape(*shapes)
-        assert(shape.elementNum == newShape.elementNum)
-        shape = newShape
+    fun guessShape(wholeSize: Int, shapes: IntArray) : IntArray{
+        val negativeNum = shapes.filter { it == -1 }.count()
+        if(negativeNum == 0)
+            return shapes
+        if(negativeNum != 1)
+            throw Exception("More than one -1 in reshape. ($negativeNum)")
+        val determined = shapes.filter { it != -1 }.toList()
+        val determinedElemNum = determined.fold(1, {acc, i-> acc*i})
+        val guessed = wholeSize/determinedElemNum
+        if(determinedElemNum*guessed != wholeSize)
+            throw Exception("reshape not compatible, $determinedElemNum x $guessed != $wholeSize")
+        return shapes.map {
+            if(it == -1)
+                guessed
+            else
+                it
+        }.toIntArray()
+    }
+
+    fun reshape(vararg newShape: Int) : KdFTensor{
+        val newGuessedShape = Shape(*guessShape(shape.elementNum, newShape))
+        assert(shape.elementNum == newGuessedShape.elementNum)
+        shape = newGuessedShape
         return this
     }
 
@@ -57,6 +76,24 @@ class KdFTensor(val size: Int) {
         val shapeArgs = ranges.map { NumberIndex(it) }
         val indices = shape.toIndices(*shapeArgs.toTypedArray())
         return floatArray[indices.indices[0]]
+    }
+
+    operator fun set(vararg ranges: ShapeIndex, right: KdFTensor) {
+        val indices = shape.toIndices(*ranges)
+        assert(indices.indices.size == right.size)
+        indices.indices.forEachIndexed{ index, destIndex->this.floatArray[destIndex] = right.floatArray[index] }
+    }
+
+    // broad cast.
+    operator fun set(vararg ranges: ShapeIndex, right: Float) {
+        val indices = shape.toIndices(*ranges)
+        indices.indices.forEach{ this.floatArray[it] = right }
+    }
+
+    operator fun times(scale: Float) : KdFTensor {
+        val res = KdFTensor(floatArray.map{it*scale}.toList())
+        res.shape = shape.clone()
+        return res
     }
 
     val rowSize
@@ -96,4 +133,17 @@ class KdFTensor(val size: Int) {
     get() = rows.map { it.argMax }
 
 
+}
+
+object TensorDSL {
+    val all = AllIndex
+    fun n(i: Int) = NumberIndex(i)
+    fun r(beg: Int, end: Int) = RangeIndex(beg, end)
+    fun zeros(size: Int) = KdFTensor.zeros(size)
+    fun arange(end: Int) = KdFTensor.arange(end)
+    fun tensor(flist: List<Float>) = KdFTensor(flist)
+}
+
+fun tensor_ns(block: TensorDSL.()->Unit): Unit {
+    TensorDSL.block()
 }
