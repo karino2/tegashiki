@@ -17,7 +17,7 @@ class Shape(vararg val shape: Int) {
     operator fun get(i : Int) = shape[i]
 
     val size = shape.size
-    
+
     val elementNum
     get() = shape.fold(1, {acc, cur-> acc*cur})
 
