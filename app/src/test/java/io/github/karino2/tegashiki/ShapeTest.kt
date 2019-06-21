@@ -123,4 +123,20 @@ class ShapeTest {
         assertEquals(shape1, shape2)
         assertNotEquals(shape1, shape3)
     }
+
+    @Test
+    fun toIndex() {
+        val shape = Shape(2, 3, 5)
+
+        assertEquals(0, shape.toIndex(0, 0, 0))
+        assertEquals(1, shape.toIndex(0, 0, 1))
+        assertEquals(4, shape.toIndex(0, 0, 4))
+        assertEquals(5, shape.toIndex(0, 1, 0))
+        assertEquals(9, shape.toIndex(0, 1, 4))
+        assertEquals(15, shape.toIndex(1, 0, 0))
+        assertEquals(16, shape.toIndex(1, 0, 1))
+        assertEquals(20, shape.toIndex(1, 1, 0))
+        assertEquals(21, shape.toIndex(1, 1, 1))
+        assertEquals(29, shape.toIndex(1, 2, 4))
+    }
 }

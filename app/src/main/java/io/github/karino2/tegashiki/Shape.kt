@@ -13,41 +13,55 @@ data class RangeIndex(val begin: Int, val end: Int) : ShapeIndex() {
 object AllIndex : ShapeIndex()
 
 
-class Shape(vararg val shape: Int) {
-    operator fun get(i : Int) = shape[i]
+class Shape(vararg val dimArray: Int) {
+    operator fun get(i : Int) = dimArray[i]
 
     fun clone() : Shape {
-        return Shape(*shape)
+        return Shape(*dimArray)
     }
 
-    val size = shape.size
+    val size = dimArray.size
 
     val elementNum
-    get() = shape.fold(1, {acc, cur-> acc*cur})
+    get() = dimArray.fold(1, { acc, cur-> acc*cur})
 
     override operator fun equals(other: Any?) : Boolean {
         return when(other) {
             is Shape -> {
-                shape.contentEquals(other.shape)
+                dimArray.contentEquals(other.dimArray)
             }
             else -> false
         }
     }
 
+    fun toIndex(vararg poses: Int) : Int {
+        val rowOffsets = IntArray(dimArray.size).apply { fill(1) }
+        repeat(dimArray.size-1) {reverseCol->
+            val col = dimArray.size - reverseCol-1
+            repeat(col) {
+                rowOffsets[it] *= dimArray[col]
+            }
+        }
+
+        return poses.foldIndexed(0) {index, acc, pos->
+            acc+pos*rowOffsets[index]
+        }
+    }
+
     fun toIndices(vararg ranges: ShapeIndex) : Indices {
-        assert(ranges.size == shape.size)
+        myassert(ranges.size == dimArray.size)
 
         val res = ArrayList<Int>()
         fun buildRes(curIdx: Int, start:Int) {
-            val isLast = curIdx == shape.size
+            val isLast = curIdx == dimArray.size
             val one :(Int, Int)->Unit =
-                if(curIdx == shape.size-1) {_:Int,cur:Int -> res.add(cur) }
+                if(curIdx == dimArray.size-1) { _:Int, cur:Int -> res.add(cur) }
                 else {cur:Int, start:Int-> buildRes(cur, start) }
-            val curStart = start*shape[curIdx]
+            val curStart = start*dimArray[curIdx]
 
             when(val curRange = ranges[curIdx]) {
                 is AllIndex -> {
-                    repeat(shape[curIdx]) {
+                    repeat(dimArray[curIdx]) {
                         one(curIdx+1, curStart+it)
                     }
                 }
@@ -67,7 +81,7 @@ class Shape(vararg val shape: Int) {
         ranges.forEachIndexed { index, shapeIndex ->
             when(shapeIndex) {
                 is AllIndex ->
-                    resShape.add(shape[index])
+                    resShape.add(dimArray[index])
                 is RangeIndex ->
                     resShape.add(shapeIndex.size)
                 is NumberIndex ->
@@ -77,7 +91,7 @@ class Shape(vararg val shape: Int) {
             }
         }
 
-        // only one dimension, return [1] shape.
+        // only one dimension, return [1] dimArray.
         if(resShape.size == 0) resShape.add(1)
 
         return Indices(Shape(*resShape.toIntArray()), res)
