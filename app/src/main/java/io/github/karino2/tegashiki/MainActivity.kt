@@ -58,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         strokeTracker.clear()
         DECODER_INPUT_INIT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
         model.inputStroke.buf.fill(0)
+        resultTextView.text = ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
