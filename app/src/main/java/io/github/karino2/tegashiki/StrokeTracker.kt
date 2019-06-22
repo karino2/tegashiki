@@ -14,10 +14,15 @@ class StrokeTracker(val width: Int, val outputTensor: KdFTensor) {
 
     fun addStroke(xylistInput: List<Float>) {
         val xylist = reduceIfNecessary(xylistInput)
+        val one = KdFTensor(xylist).reshape(-1, 2)
+        addNewStrokeTensor(one)
+        curIndex++
+    }
+
+    fun addNewStrokeTensor(newStroke: KdFTensor) {
         tensor_ns {
-            val one = tensor(xylist).reshape(-1, 2)
-            val len = one.shape[0]
-            nonNormalizeTensor[n(curIndex), r(0, len), r(0, 2)] = one
+            val len = newStroke.shape[0]
+            nonNormalizeTensor[n(curIndex), r(0, len), r(0, 2)] = newStroke
             nonNormalizeTensor[n(curIndex), r(0, len), n(2)] = INPUT_TYPE_POS
 
             val nonzeroMask = nonNormalizeTensor[all, all, n(2)].scalar_equal(INPUT_TYPE_POS)
@@ -26,22 +31,21 @@ class StrokeTracker(val width: Int, val outputTensor: KdFTensor) {
             val xmin = nonzero[all, n(0)].min()
             val ymax = nonzero[all, n(1)].max()
             val ymin = nonzero[all, n(1)].min()
-            val xdelta = xmax-xmin+0.0001f
-            val ydelta = ymax-ymin+0.0001f
-            val scale = min(NORMALIZE_MAX.toFloat()/xdelta, NORMALIZE_MAX.toFloat()/ydelta)
+            val xdelta = xmax - xmin + 0.0001f
+            val ydelta = ymax - ymin + 0.0001f
+            val scale = min(NORMALIZE_MAX.toFloat() / xdelta, NORMALIZE_MAX.toFloat() / ydelta)
 
-            repeat(curIndex+1) {
+            repeat(curIndex + 1) {
                 val rowMask = nonNormalizeTensor[n(it), all, n(2)].scalar_equal(INPUT_TYPE_POS)
                 val rowXY = nonNormalizeTensor[n(it), all, all][rowMask]
                 val rowLen = rowXY.shape[0]
                 val originTensorX = rowXY[all, n(0)] - xmin
-                val originTensorY = rowXY[all, n(1)]-ymin
-                outputTensor[n(it), r(0, rowLen), n(0)] = originTensorX*scale
-                outputTensor[n(it), r(0, rowLen), n(1)] = originTensorY*scale
+                val originTensorY = rowXY[all, n(1)] - ymin
+                outputTensor[n(it), r(0, rowLen), n(0)] = originTensorX * scale
+                outputTensor[n(it), r(0, rowLen), n(1)] = originTensorY * scale
             }
             outputTensor[n(curIndex), r(0, len), n(2)] = INPUT_TYPE_POS
         }
-        curIndex++
     }
 
     private fun reduceIfNecessary(xylistInput: List<Float>): List<Float> {
