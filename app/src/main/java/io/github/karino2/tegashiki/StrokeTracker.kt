@@ -3,30 +3,30 @@ package io.github.karino2.tegashiki
 import android.util.Log
 import kotlin.math.min
 
-class StrokeTracker(val width: Int, val outputTensor: KdFTensor) {
+class StrokeTracker(val outputTensor: KdFTensor) {
     val NORMALIZE_MAX = 2000
     val INPUT_TYPE_POS=1f
 
     var curIndex = 0
-    val nonNormalizeTensor = KdFTensor(outputTensor.shape)
+    val unnormalizeTensor = KdFTensor(outputTensor.shape)
 
 
 
     fun addStroke(xylistInput: List<Float>) {
         val xylist = reduceIfNecessary(xylistInput)
         val one = KdFTensor(xylist).reshape(-1, 2)
-        addNewStrokeTensor(one)
+        setNewStrokeTensor(one)
         curIndex++
     }
 
-    fun addNewStrokeTensor(newStroke: KdFTensor) {
+    fun setNewStrokeTensor(newStroke: KdFTensor) {
         tensor_ns {
             val len = newStroke.shape[0]
-            nonNormalizeTensor[n(curIndex), r(0, len), r(0, 2)] = newStroke
-            nonNormalizeTensor[n(curIndex), r(0, len), n(2)] = INPUT_TYPE_POS
+            unnormalizeTensor[n(curIndex), r(0, len), r(0, 2)] = newStroke
+            unnormalizeTensor[n(curIndex), r(0, len), n(2)] = INPUT_TYPE_POS
 
-            val nonzeroMask = nonNormalizeTensor[all, all, n(2)].scalar_equal(INPUT_TYPE_POS)
-            val nonzero = nonNormalizeTensor[nonzeroMask]
+            val nonzeroMask = unnormalizeTensor[all, all, n(2)].scalar_equal(INPUT_TYPE_POS)
+            val nonzero = unnormalizeTensor[nonzeroMask]
             val xmax = nonzero[all, n(0)].max()
             val xmin = nonzero[all, n(0)].min()
             val ymax = nonzero[all, n(1)].max()
@@ -36,8 +36,8 @@ class StrokeTracker(val width: Int, val outputTensor: KdFTensor) {
             val scale = min(NORMALIZE_MAX.toFloat() / xdelta, NORMALIZE_MAX.toFloat() / ydelta)
 
             repeat(curIndex + 1) {
-                val rowMask = nonNormalizeTensor[n(it), all, n(2)].scalar_equal(INPUT_TYPE_POS)
-                val rowXY = nonNormalizeTensor[n(it), all, all][rowMask]
+                val rowMask = unnormalizeTensor[n(it), all, n(2)].scalar_equal(INPUT_TYPE_POS)
+                val rowXY = unnormalizeTensor[n(it), all, all][rowMask]
                 val rowLen = rowXY.shape[0]
                 val originTensorX = rowXY[all, n(0)] - xmin
                 val originTensorY = rowXY[all, n(1)] - ymin
@@ -74,7 +74,7 @@ class StrokeTracker(val width: Int, val outputTensor: KdFTensor) {
         curIndex = 0
         tensor_ns {
             outputTensor[all, all, all] = 0f
-            nonNormalizeTensor[all, all, all] = 0f
+            unnormalizeTensor[all, all, all] = 0f
         }
     }
 

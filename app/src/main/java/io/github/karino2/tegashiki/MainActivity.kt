@@ -2,13 +2,51 @@ package io.github.karino2.tegashiki
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import java.io.File
+import java.io.IOException
+import com.google.gson.stream.JsonWriter
+import java.io.FileWriter
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        fun ensureDirExist(dir: File) {
+            if (!dir.exists()) {
+                if (!dir.mkdir()) {
+                    throw IOException()
+                }
+            }
+        }
+
+        fun getStoreDirectory(): File {
+            // getExternalStoragePublicDirectory
+            val dir = File(Environment.getExternalStorageDirectory(), "Tegashiki")!!
+            // val dir = getExternalFilesDir("Tegashiki")!!
+            ensureDirExist(dir)
+            return dir
+        }
+
+        fun createStoreFile() : File {
+            val fname = createFileName()
+            return File(getStoreDirectory(), fname)
+        }
+
+        fun createFileName(): String {
+            val timeStampFormat = SimpleDateFormat("yyyyMMdd_HHmmssSS")
+            return timeStampFormat.format(Date()) + ".json"
+        }
+
+    }
 
     val model by lazy { Model(assets) }
 
@@ -30,22 +68,55 @@ class MainActivity : AppCompatActivity() {
 
 
     val strokeTracker by lazy {
-        StrokeTracker(strokeCanvas.currentWidth, strokeFloatTensor)
+        StrokeTracker(strokeFloatTensor)
     }
 
-    fun onButtonClick(v: View) {
-        DECODER_INPUT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
+    fun onDebugButtonClick(v: View) {
+        // predictHardCoard()
+        dumpInput()
+    }
+
+    fun dumpInput() {
+        val writer = JsonWriter(FileWriter(createStoreFile()))
+        writer.beginArray()
+
+        writer.beginArray()
+        rawPosListStore.forEach {
+            writer.beginArray()
+            it.forEach {
+                writer.value(it)
+            }
+            writer.endArray()
+        }
+        writer.endArray()
+
+        writer.beginArray()
+        strokeFloatTensor.floatArray.forEach {
+            writer.value(it)
+        }
+        writer.endArray()
+
+        writer.endArray()
+        writer.close()
+    }
+
+
+
+
+
+    private fun predictHardCoard() {
+        DECODER_INPUT.forEachIndexed { index, i -> model.inputDecoder.put(index, i) }
 
         val parser = JsonParser()
         val obj = parser.parse(STROKE_TEXT) as JsonArray
         obj.forEachIndexed { strokeIndex, jsonElemOneStroke ->
             val stroke = jsonElemOneStroke as JsonArray
-            val strokeOffset = strokeIndex* Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM
-            stroke.forEachIndexed {posIndex, jsonElemOnePosArray ->
+            val strokeOffset = strokeIndex * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM
+            stroke.forEachIndexed { posIndex, jsonElemOnePosArray ->
                 val pos = jsonElemOnePosArray as JsonArray
-                model.inputStroke.put(strokeOffset+posIndex* Model.INPUT_DIM, pos[0].asInt)
-                model.inputStroke.put(strokeOffset+posIndex* Model.INPUT_DIM +1, pos[1].asInt)
-                model.inputStroke.put(strokeOffset+posIndex* Model.INPUT_DIM +2, pos[2].asInt)
+                model.inputStroke.put(strokeOffset + posIndex * Model.INPUT_DIM, pos[0].asInt)
+                model.inputStroke.put(strokeOffset + posIndex * Model.INPUT_DIM + 1, pos[1].asInt)
+                model.inputStroke.put(strokeOffset + posIndex * Model.INPUT_DIM + 2, pos[2].asInt)
             }
         }
 
@@ -59,7 +130,10 @@ class MainActivity : AppCompatActivity() {
         DECODER_INPUT_INIT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
         model.inputStroke.buf.fill(0)
         resultTextView.text = ""
+        rawPosListStore.clear()
     }
+
+    val rawPosListStore = ArrayList<List<Float>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +142,7 @@ class MainActivity : AppCompatActivity() {
         DECODER_INPUT_INIT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
 
         strokeCanvas.strokeListener = {one ->
+            rawPosListStore.add(mutableListOf<Float>().apply { addAll(one) })
             strokeTracker.addStroke(one)
             strokeFloatTensor.floatArray.forEachIndexed { index, fl -> model.inputStroke.buf[index] = fl.toInt() }
 

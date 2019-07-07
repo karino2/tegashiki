@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:text="DEBUG"
             android:id="@+id/buttonDebug"
-            android:onClick="onButtonClick"
+            android:onClick="onDebugButtonClick"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/buttonUndo"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"/>

@@ -63,7 +63,7 @@ class StrokeTrackerTest {
     @Test
     fun normalizeStroke() {
         val out_tensor = KdFTensor(13*50*3).reshape(13, 50, 3)
-        val target = StrokeTracker(100, out_tensor)
+        val target = StrokeTracker(out_tensor)
 
         val stroke = KdFTensorTest.createTestStrokeTensor()
 
@@ -71,7 +71,7 @@ class StrokeTrackerTest {
             val nonzeroMask = stroke[n(it), all, n(2)].scalar_equal(1f)
             val xyRow = stroke[n(it), all, r(0, 2)][nonzeroMask]
 
-            target.addNewStrokeTensor(xyRow)
+            target.setNewStrokeTensor(xyRow)
             target.curIndex++
         }
 
@@ -96,7 +96,7 @@ class StrokeTrackerTest {
     fun normalizeStroke2() {
 
         val outTensor = KdFTensor(13*50*3).reshape(13, 50, 3)
-        val target = StrokeTracker(100, outTensor)
+        val target = StrokeTracker(outTensor)
 
         val stroke = KdFTensorTest.createStrokeTensor(SHIFTED_STROKE_TEXT)
 
@@ -104,7 +104,7 @@ class StrokeTrackerTest {
             val nonzeroMask = stroke[n(it), all, n(2)].scalar_equal(1f)
             val xyRow = stroke[n(it), all, r(0, 2)][nonzeroMask]
 
-            target.addNewStrokeTensor(xyRow)
+            target.setNewStrokeTensor(xyRow)
             target.curIndex++
         }
 

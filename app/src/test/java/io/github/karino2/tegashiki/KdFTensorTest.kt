@@ -154,5 +154,24 @@ class KdFTensorTest {
         assertEquals(1f, actual[0, 2])
     }
 
+    @Test
+    fun argMaxEachRow() {
+        val target = KdFTensor(
+            listOf(
+                1f, -0f, 3f,
+                0.2f, 5f, 0f,
+                0.3f, 0.1f, 10f,
+                5f, 3f, 2f,
+                1f, 1f, 3f)).reshape(5, 3)
+
+        val classes = target.argMaxEachRaw.toList()
+        assertEquals(2, classes[0])
+        assertEquals(1, classes[1])
+        assertEquals(2, classes[2])
+        assertEquals(0, classes[3])
+        assertEquals(2, classes[4])
+
+
+    }
 
 }
