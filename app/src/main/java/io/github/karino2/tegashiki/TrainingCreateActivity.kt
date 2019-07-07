@@ -72,7 +72,7 @@ class TrainingCreateActivity : AppCompatActivity() {
         writer.endArray()
         writer.close()
 
-        showMessage("Saved ${file.name}")
+        showMessage("Saved (${allStrokesList.size} pats) ${file.name}")
     }
 
     fun onNextClick(v: View) {
