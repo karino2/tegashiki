@@ -11,11 +11,14 @@ import java.nio.channels.FileChannel
 
 class Model(val assets: AssetManager) {
     companion object {
-        const val MAX_STROKE_NUM=13
+        const val MAX_STROKE_NUM=22
         const val MAX_ONE_STROKE_LEN=50
         const val INPUT_DIM=3
-        const val MAX_TOKEN_LEN=5
-        const val VOCAB_SIZE=114
+        const val MAX_TOKEN_LEN=12
+        const val VOCAB_SIZE=115
+
+        const val DECODER_START_TOKEN=113
+        const val DECODER_END_TOKEN=114
 
 
         val id2sym = mapOf(
@@ -130,8 +133,9 @@ class Model(val assets: AssetManager) {
             109 to "y",
             110 to "}",
             111 to "\\to",
-            113 to "<eos>",
-            112 to "<sos>",
+            112 to "\\mathbb{R}",
+            113 to "<sos>",
+            114 to "<eos>",
             0 to "<pad>"
         )
     }
