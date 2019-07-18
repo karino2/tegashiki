@@ -1,8 +1,12 @@
 package io.github.karino2.tegashiki
 
 import android.content.res.AssetManager
+import android.util.Log
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -166,11 +170,54 @@ class Model(val assets: AssetManager) {
     val outputBuf = outputTensor.createMirrorBuf()
 
 
-    fun predict() : List<Int> {
+    fun predictInternal() : List<Int> {
         outputBuf.rewind()
         interpreter.runForMultipleInputsOutputs(arrayOf(inputDecoder.toByteBuf(), inputStroke.toByteBuf()), mapOf(0 to outputBuf))
         outputTensor.readToArray(outputBuf)
         return outputTensor.argMaxEachRaw.toList()
+    }
+
+    var requestCancel = false
+
+    suspend fun predict(strokeList: FloatArray) : List<Int> {
+        requestCancel = false
+
+        setupInput(strokeList)
+
+        val res = ArrayList<Int>()
+
+        var endReached = false
+
+        repeat(Model.MAX_TOKEN_LEN) {
+            if(!endReached && !requestCancel) {
+                yield() // to check cancellation other than requestCancel.
+
+                val oneres = withContext(Dispatchers.IO) {
+                    predictInternal()
+                }
+
+                Log.d("Tegashiki", "$it - inputdec- ${inputDecoder.buf.toList().toString()}")
+                Log.d("Tegashiki", "$it - ${oneres.toString()}")
+                res.add(oneres[it])
+                if (oneres[it] == Model.DECODER_END_TOKEN)
+                    endReached = true
+                if (it != Model.MAX_TOKEN_LEN - 1)
+                    inputDecoder.put(it + 1, oneres[it])
+            }
+        }
+
+        return res
+    }
+
+    fun toSymbolText(ids: List<Int>) =  ids.map { id2sym[it] }.joinToString("")
+
+    private fun setupInput(strokeList: FloatArray) {
+        strokeList.forEachIndexed { index, fl -> inputStroke.buf[index] = fl.toInt() }
+
+        repeat(MAX_TOKEN_LEN) {
+            inputDecoder.put(it, 0)
+        }
+        inputDecoder.put(0, DECODER_START_TOKEN)
     }
 
 }

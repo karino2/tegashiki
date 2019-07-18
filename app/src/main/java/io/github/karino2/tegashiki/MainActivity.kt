@@ -6,11 +6,17 @@ import android.os.Environment
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import com.google.gson.JsonArray
-import com.google.gson.JsonParser
 import java.io.File
 import java.io.IOException
 import com.google.gson.stream.JsonWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.*
@@ -51,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     val model by lazy { Model(assets) }
 
 
-    val DECODER_INPUT_INIT = listOf(Model.DECODER_START_TOKEN,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     val strokeCanvas by lazy { findViewById<StrokeCanvas>(R.id.canvas)!! }
 
 
@@ -99,7 +104,6 @@ class MainActivity : AppCompatActivity() {
     fun onClearClick(v: View) {
         strokeCanvas.clearCanvas()
         strokeTracker.clear()
-        DECODER_INPUT_INIT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
         model.inputStroke.buf.fill(0)
         resultTextView.text = ""
         rawPosListStore.clear()
@@ -107,44 +111,42 @@ class MainActivity : AppCompatActivity() {
 
     val rawPosListStore = ArrayList<List<Float>>()
 
+    val mainScope = MainScope()
+    override fun onDestroy() {
+        mainScope.cancel()
+        super.onDestroy()
+    }
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        DECODER_INPUT_INIT.forEachIndexed { index, i ->  model.inputDecoder.put(index, i) }
+        val channel = Channel<FloatArray>(Channel.CONFLATED)
 
-        strokeCanvas.strokeListener = {one ->
+        strokeCanvas.strokeListener = { one ->
+            model.requestCancel = true
+
             rawPosListStore.add(mutableListOf<Float>().apply { addAll(one) })
             strokeTracker.addStroke(one)
-            strokeFloatTensor.floatArray.forEachIndexed { index, fl -> model.inputStroke.buf[index] = fl.toInt() }
 
-            repeat(Model.MAX_TOKEN_LEN) {
-                model.inputDecoder.put(it, 0)
+            mainScope.launch {
+                channel.send(strokeFloatTensor.floatArray)
             }
-            model.inputDecoder.put(0, Model.DECODER_START_TOKEN)
+        }
 
-
-            val res = ArrayList<Int>().apply {addAll(0 until Model.MAX_TOKEN_LEN)}
-
-            var endReached = false
-            val buf = StringBuilder()
-
-            repeat(Model.MAX_TOKEN_LEN) {
-                if(!endReached) {
-                    val oneres = model.predict()
-                    Log.d("Tegashiki", "$it - inputdec- ${model.inputDecoder.buf.toList().toString()}")
-                    Log.d("Tegashiki", "$it - ${oneres.toString()}")
-                    res[it] = oneres[it]
-                    if (oneres[it] == Model.DECODER_END_TOKEN)
-                        endReached = true
-                    if (it != Model.MAX_TOKEN_LEN - 1)
-                        model.inputDecoder.put(it + 1, oneres[it])
-                    buf.append(Model.id2sym[oneres[it]])
+        mainScope.launch {
+            for(arr in channel){
+                val res = model.predict(arr)
+                if (!model.requestCancel) {
+                    Log.d("Tegashiki", "final - ${res.toString()}")
+                    resultTextView.text = model.toSymbolText(res)
                 }
             }
-            Log.d("Tegashiki", "final - ${res.toString()}")
-            resultTextView.text = buf.toString()
         }
+
+
     }
 
     val resultTextView by lazy { findViewById<TextView>(R.id.textViewResult) }
