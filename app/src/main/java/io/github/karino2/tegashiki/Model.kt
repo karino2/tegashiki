@@ -164,6 +164,8 @@ class Model(val assets: AssetManager) {
         KdTensor(1*MAX_TOKEN_LEN)
     }
 
+    val predAnalyzer = PredictAnalyzer(DECODER_END_TOKEN, MAX_TOKEN_LEN)
+
 
     val outputTensor = KdFTensor(1*MAX_TOKEN_LEN*VOCAB_SIZE).reshape(MAX_TOKEN_LEN, VOCAB_SIZE)
     val outputBuf = outputTensor.createMirrorBuf()
@@ -183,29 +185,24 @@ class Model(val assets: AssetManager) {
 
         setupInput(strokeList)
 
-        val res = ArrayList<Int>()
-
-        var endReached = false
-
         repeat(Model.MAX_TOKEN_LEN) {
-            if(!endReached && !requestCancel) {
+            if(!predAnalyzer.isEnd && !requestCancel) {
                 yield() // to check cancellation other than requestCancel.
 
                 val oneres = withContext(Dispatchers.IO) {
                     predictInternal()
                 }
 
-                Log.d("Tegashiki", "$it - inputdec- ${inputDecoder.buf.toList().toString()}")
-                Log.d("Tegashiki", "$it - ${oneres.toString()}")
-                res.add(oneres[it])
-                if (oneres[it] == Model.DECODER_END_TOKEN)
-                    endReached = true
-                if (it != Model.MAX_TOKEN_LEN - 1)
-                    inputDecoder.put(it + 1, oneres[it])
+                predAnalyzer.next(oneres)
+
+                oneres.forEachIndexed { index, elem ->
+                    if(index+1 < MAX_TOKEN_LEN)
+                        inputDecoder.put(index + 1, elem)
+                }
             }
         }
 
-        return res
+        return predAnalyzer.result
     }
 
     fun toSymbolText(ids: List<Int>) =  ids.map { id2sym[it] }.joinToString("")
@@ -213,10 +210,8 @@ class Model(val assets: AssetManager) {
     private fun setupInput(strokeList: FloatArray) {
         strokeList.forEachIndexed { index, fl -> inputStroke.buf[index] = fl.toInt() }
 
-        repeat(MAX_TOKEN_LEN) {
-            inputDecoder.put(it, 0)
-        }
         inputDecoder.put(0, DECODER_START_TOKEN)
+        predAnalyzer.init(inputDecoder.buf.toList().drop(1))
     }
 
 }
