@@ -1,11 +1,16 @@
 package io.github.karino2.tegashiki
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import java.io.File
 import java.io.IOException
 import com.google.gson.stream.JsonWriter
@@ -67,9 +72,26 @@ class MainActivity : AppCompatActivity() {
         StrokeTracker(strokeFloatTensor)
     }
 
-    fun onDebugButtonClick(v: View) {
-        // predictHardCoard()
+    fun onCopyButtonClick(v: View) {
+        copyToClipboard("\$\$${resultTextView.text.toString()}\$\$")
+    }
+
+    private fun copyToClipboard(content: String) {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("math", content)
+        clipboard.setPrimaryClip(clip)
+        showMessage("TeX copied to clipboard")
+    }
+
+    fun showMessage(msg : String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+
+    fun onDumpMenuItemClick(item: MenuItem) {
         dumpInput()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     fun dumpInput() {

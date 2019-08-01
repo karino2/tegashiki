@@ -16,20 +16,20 @@
             android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="8dp"></io.github.karino2.tegashiki.StrokeCanvas>
     <TextView
-            android:text="Result"
+            android:text=""
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:id="@+id/textViewResult"
-            app:layout_constraintBottom_toTopOf="@+id/buttonDebug" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/buttonCopy" app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginTop="8dp"
             app:layout_constraintTop_toTopOf="@+id/guideline"/>
 
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="DEBUG"
-            android:id="@+id/buttonDebug"
-            android:onClick="onDebugButtonClick"
+            android:text="Copy"
+            android:id="@+id/buttonCopy"
+            android:onClick="onCopyButtonClick"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/buttonUndo"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"/>
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/buttonUndo"
-            app:layout_constraintStart_toEndOf="@+id/buttonDebug"
+            app:layout_constraintStart_toEndOf="@+id/buttonCopy"
             app:layout_constraintEnd_toStartOf="@+id/buttonClear" android:layout_marginTop="4dp"
             app:layout_constraintTop_toBottomOf="@+id/textViewResult" android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"/>
