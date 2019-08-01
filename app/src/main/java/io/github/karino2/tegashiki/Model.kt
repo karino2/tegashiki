@@ -145,8 +145,7 @@ class Model(val assets: AssetManager) {
     }
 
     val modelFile: MappedByteBuffer by lazy {
-        // from convencdec_myembed_small.tflite
-        val afd = assets.openFd("convencdec.tflite")
+        val afd = assets.openFd("tegashiki.tflite")
         val inputStream = FileInputStream(afd.fileDescriptor)
         val fc = inputStream.channel
         fc.map(FileChannel.MapMode.READ_ONLY, afd.startOffset, afd.declaredLength)
