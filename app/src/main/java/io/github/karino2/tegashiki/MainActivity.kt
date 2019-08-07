@@ -76,6 +76,11 @@ class MainActivity : AppCompatActivity() {
         copyToClipboard("\$\$${resultTextView.text.toString()}\$\$")
     }
 
+    fun onUndoButtonClick(v: View) {
+        strokeCanvas.undo()
+        undo()
+    }
+
     private fun copyToClipboard(content: String) {
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("math", content)
@@ -139,19 +144,32 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
+    val channel = Channel<FloatArray>(Channel.CONFLATED)
+
+    fun undo() {
+        if(rawPosListStore.size == 0)
+            return
+        rawPosListStore.removeAt(rawPosListStore.size-1)
+        strokeTracker.undo()
+        mainScope.launch {
+            channel.send(strokeFloatTensor.floatArray)
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val channel = Channel<FloatArray>(Channel.CONFLATED)
 
         strokeCanvas.strokeListener = { one ->
             model.requestCancel = true
 
-            rawPosListStore.add(mutableListOf<Float>().apply { addAll(one) })
-            strokeTracker.addStroke(one)
+
+            val clonedOne = one.clone()
+
+            rawPosListStore.add(clonedOne)
+            strokeTracker.addStroke(clonedOne)
 
             mainScope.launch {
                 channel.send(strokeFloatTensor.floatArray)

@@ -275,12 +275,14 @@ class StrokeCanvas(context: Context, attrs: AttributeSet) : View(context, attrs)
                 val region = pathBound()
                 val undo = Bitmap.createBitmap(offscreenBitmap, region.left.toInt(), region.top.toInt(), region.width().toInt(), region.height().toInt())
                 offscreenCanvas.drawPath(strokePath, strokePaint)
-                strokeListener(xyList)
-                xyList.clear()
 
                 val redo = Bitmap.createBitmap(offscreenBitmap, region.left.toInt(), region.top.toInt(), region.width().toInt(), region.height().toInt())
 
                 undoList.pushUndoCommand(region.left, region.top, undo, redo, undoRegion, redoRegion)
+
+                // should call after undo command pushed if you need to access latest undo command inside callback.
+                strokeListener(xyList)
+                xyList.clear()
 
                 strokePath.reset()
                 invalidate()
