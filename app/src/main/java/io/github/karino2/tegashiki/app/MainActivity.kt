@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         fun getStoreDirectory(): File {
             // getExternalStoragePublicDirectory
-            val dir = File(Environment.getExternalStorageDirectory(), "Tegashiki")!!
+            val dir = File(Environment.getExternalStorageDirectory(), "Tegashiki")
             // val dir = getExternalFilesDir("Tegashiki")!!
             ensureDirExist(dir)
             return dir

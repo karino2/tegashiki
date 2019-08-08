@@ -28,7 +28,6 @@ class KdFTensorTest {
             val obj = parser.parse(target) as JsonArray
             obj.forEachIndexed { strokeIndex, jsonElemOneStroke ->
                 val stroke = jsonElemOneStroke as JsonArray
-                val strokeOffset = strokeIndex * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM
                 stroke.forEachIndexed { posIndex, jsonElemOnePosArray ->
                     val pos = jsonElemOnePosArray as JsonArray
                     res[strokeIndex, posIndex, 0] = pos[0].asFloat

@@ -39,7 +39,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
     fun showMessage(msg : String) = Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 
     fun onSendButtonClick(v: View) {
-        sendResultListener("\$\$${resultTextView.text.toString()}\$\$")
+        sendResultListener("\$\$${resultTextView.text}\$\$")
     }
 
     fun onUndoButtonClick(v: View) {
@@ -105,7 +105,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
             for(arr in channel){
                 val res = model.predict(arr)
                 if (!model.requestCancel) {
-                    Log.d("Tegashiki", "final - ${res.toString()}")
+                    Log.d("Tegashiki", "final - $res")
                     resultTextView.text = model.toSymbolText(res)
                 }
             }

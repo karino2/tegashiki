@@ -52,11 +52,11 @@ class Shape(vararg val dimArray: Int) {
         myassert(ranges.size == dimArray.size)
 
         val res = ArrayList<Int>()
+
         fun buildRes(curIdx: Int, start:Int) {
-            val isLast = curIdx == dimArray.size
             val one :(Int, Int)->Unit =
                 if(curIdx == dimArray.size-1) { _:Int, cur:Int -> res.add(cur) }
-                else {cur:Int, start:Int-> buildRes(cur, start) }
+                else {cur:Int, start2:Int-> buildRes(cur, start2) }
             val curStart = start*dimArray[curIdx]
 
             when(val curRange = ranges[curIdx]) {

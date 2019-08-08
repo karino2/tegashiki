@@ -169,7 +169,7 @@ class KdFTensor(val size: Int) {
 
     fun scalar_equal(right: Float) : KdBTensor {
         val res = KdBTensor(shape)
-        floatArray.forEachIndexed { index, fl ->  res.dataArray[index] = (floatArray[index] == right) }
+        floatArray.forEachIndexed { index, _ ->  res.dataArray[index] = (floatArray[index] == right) }
         return res
     }
 
