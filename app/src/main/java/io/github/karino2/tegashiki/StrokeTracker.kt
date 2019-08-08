@@ -13,10 +13,12 @@ class StrokeTracker(val outputTensor: KdFTensor) {
 
     var curIndex = 0
     val unnormalizeTensor = KdFTensor(outputTensor.shape)
+    val rawPosListStore = ArrayList<List<Float>>()
 
 
     // Return undo-redo state
     fun addStroke(xylistInput: List<Float>) : List<Float>{
+        rawPosListStore.add(xylistInput)
         val xylist = reduceIfNecessary(xylistInput)
         addStrokeInner(xylist)
         return xylist
@@ -28,12 +30,18 @@ class StrokeTracker(val outputTensor: KdFTensor) {
         curIndex++
     }
 
+    val canUndo:Boolean
+        get() = curIndex != 0
+
     fun undo() {
-        curIndex--
-        tensor_ns {
-            unnormalizeTensor[n(curIndex), all, all] = 0f
-            outputTensor[n(curIndex), all, all] = 0f
-            normalizeTensor()
+        if(canUndo) {
+            curIndex--
+            rawPosListStore.removeAt(rawPosListStore.size-1)
+            tensor_ns {
+                unnormalizeTensor[n(curIndex), all, all] = 0f
+                outputTensor[n(curIndex), all, all] = 0f
+                normalizeTensor()
+            }
         }
     }
 
@@ -98,6 +106,7 @@ class StrokeTracker(val outputTensor: KdFTensor) {
 
     fun clear() {
         curIndex = 0
+        rawPosListStore.clear()
         tensor_ns {
             outputTensor[all, all, all] = 0f
             unnormalizeTensor[all, all, all] = 0f

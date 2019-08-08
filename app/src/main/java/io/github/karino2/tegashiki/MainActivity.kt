@@ -1,34 +1,26 @@
 package io.github.karino2.tegashiki
 
+import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
+import android.view.ViewGroup
 import android.widget.Toast
-import java.io.File
-import java.io.IOException
+import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.stream.JsonWriter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import java.io.File
 import java.io.FileWriter
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
+    val DIALOG_ID_TEGASHIKI=1
 
     companion object {
         fun ensureDirExist(dir: File) {
@@ -59,27 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    val model by lazy { Model(assets) }
-
-
-    val strokeCanvas by lazy { findViewById<StrokeCanvas>(R.id.canvas)!! }
-
-
-    val strokeFloatTensor = KdFTensor(1* Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM).reshape(Model.MAX_STROKE_NUM, Model.MAX_ONE_STROKE_LEN, Model.INPUT_DIM)
-
-
-    val strokeTracker by lazy {
-        StrokeTracker(strokeFloatTensor)
-    }
-
-    fun onCopyButtonClick(v: View) {
-        copyToClipboard("\$\$${resultTextView.text.toString()}\$\$")
-    }
-
-    fun onUndoButtonClick(v: View) {
-        strokeCanvas.undo()
-        undo()
-    }
 
     private fun copyToClipboard(content: String) {
         val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
@@ -104,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         writer.beginArray()
 
         writer.beginArray()
-        rawPosListStore.forEach {
+        tegashikiDialog.rawPosListStore.forEach {
             writer.beginArray()
             it.forEach {
                 writer.value(it)
@@ -114,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         writer.endArray()
 
         writer.beginArray()
-        strokeFloatTensor.floatArray.forEach {
+        tegashikiDialog.strokeFloatTensor.floatArray.forEach {
             writer.value(it)
         }
         writer.endArray()
@@ -124,70 +95,41 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
-
-
-
-    fun onClearClick(v: View) {
-        strokeCanvas.clearCanvas()
-        strokeTracker.clear()
-        model.inputStroke.buf.fill(0)
-        resultTextView.text = ""
-        rawPosListStore.clear()
-    }
-
-    val rawPosListStore = ArrayList<List<Float>>()
-
-    val mainScope = MainScope()
-    override fun onDestroy() {
-        mainScope.cancel()
-        super.onDestroy()
-    }
-
-    val channel = Channel<FloatArray>(Channel.CONFLATED)
-
-    fun undo() {
-        if(rawPosListStore.size == 0)
-            return
-        rawPosListStore.removeAt(rawPosListStore.size-1)
-        strokeTracker.undo()
-        mainScope.launch {
-            channel.send(strokeFloatTensor.floatArray)
-        }
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        showDialog(DIALOG_ID_TEGASHIKI)
+    }
 
-
-        strokeCanvas.strokeListener = { one ->
-            model.requestCancel = true
-
-
-            val clonedOne = one.clone()
-
-            rawPosListStore.add(clonedOne)
-            strokeTracker.addStroke(clonedOne)
-
-            mainScope.launch {
-                channel.send(strokeFloatTensor.floatArray)
+    override fun onCreateDialog(id: Int): Dialog {
+        when(id) {
+            DIALOG_ID_TEGASHIKI-> {
+                return TegashikiDialog(this).apply {
+                    this.window!!.setGravity(Gravity.TOP)
+                    this.window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    // this.window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                }
+                // return TegashikiDialog(this)
             }
         }
+        return super.onCreateDialog(id)
+    }
 
-        mainScope.launch {
-            for(arr in channel){
-                val res = model.predict(arr)
-                if (!model.requestCancel) {
-                    Log.d("Tegashiki", "final - ${res.toString()}")
-                    resultTextView.text = model.toSymbolText(res)
+    lateinit var tegashikiDialog : TegashikiDialog
+
+    override fun onPrepareDialog(id: Int, dialog: Dialog) {
+        when(id) {
+            DIALOG_ID_TEGASHIKI -> {
+                tegashikiDialog = dialog as TegashikiDialog
+                tegashikiDialog.setCanceledOnTouchOutside(false)
+                tegashikiDialog.setCancelable(true)
+                tegashikiDialog.setOnDismissListener { finish() }
+                tegashikiDialog.sendResultListener = {
+                    copyToClipboard(it)
+                    showMessage("Copy tex to clipboard")
                 }
             }
         }
-
-
+        super.onPrepareDialog(id, dialog)
     }
 
-    val resultTextView by lazy { findViewById<TextView>(R.id.textViewResult) }
 }

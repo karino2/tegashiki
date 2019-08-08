@@ -51,11 +51,11 @@ class StrokeCanvas(context: Context, attrs: AttributeSet) : View(context, attrs)
     fun resetCanvas(w: Int, h: Int) {
         offscreenBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         offscreenCanvas = Canvas(offscreenBitmap)
-        offscreenBitmap.eraseColor(Color.WHITE)
+        offscreenBitmap.eraseColor(Color.LTGRAY)
     }
 
     fun clearCanvas() {
-        offscreenBitmap.eraseColor(Color.WHITE)
+        offscreenBitmap.eraseColor(Color.LTGRAY)
         undoList.clear()
         xyList.clear()
         invalidate()
