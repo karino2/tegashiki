@@ -39,7 +39,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
     fun showMessage(msg : String) = Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 
     fun onSendButtonClick(v: View) {
-        sendResultListener("\$\$${resultTextView.text}\$\$")
+        sendResultListener(resultTextView.text.toString())
     }
 
     fun onUndoButtonClick(v: View) {
@@ -48,6 +48,10 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
     }
 
     fun onClearButtonClick(v: View) {
+        clearAll()
+    }
+
+    fun clearAll() {
         strokeCanvas.clearCanvas()
         strokeTracker.clear()
         model.inputStroke.buf.fill(0)

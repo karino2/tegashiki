@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 tegashikiDialog.setCancelable(true)
                 tegashikiDialog.setOnDismissListener { finish() }
                 tegashikiDialog.sendResultListener = {
-                    copyToClipboard(it)
+                    copyToClipboard("\$\$$it\$\$")
                     showMessage("Copy tex to clipboard")
                 }
             }
