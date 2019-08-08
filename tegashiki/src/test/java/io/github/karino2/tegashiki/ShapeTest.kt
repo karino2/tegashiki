@@ -1,8 +1,8 @@
 package io.github.karino2.tegashiki
 
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
-
-import org.junit.Assert.*
 
 
 typealias n = NumberIndex

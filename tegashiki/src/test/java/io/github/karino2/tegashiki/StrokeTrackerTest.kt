@@ -28,7 +28,7 @@ class StrokeTrackerTest {
 
     @Test
     fun normalizeFirstStroke() {
-        val outTensor = KdFTensor(13*50*3).reshape(13, 50, 3)
+        val outTensor = KdFTensor(13 * 50 * 3).reshape(13, 50, 3)
 
         val stroke = KdFTensorTest.createTestStrokeTensor()
 
@@ -62,8 +62,8 @@ class StrokeTrackerTest {
 
     @Test
     fun normalizeStroke() {
-        val out_tensor = KdFTensor(13*50*3).reshape(13, 50, 3)
-        val target = StrokeTracker(out_tensor)
+        val out_tensor = io.github.karino2.tegashiki.KdFTensor(13 * 50 * 3).reshape(13, 50, 3)
+        val target = io.github.karino2.tegashiki.StrokeTracker(out_tensor)
 
         val stroke = KdFTensorTest.createTestStrokeTensor()
 
@@ -95,8 +95,8 @@ class StrokeTrackerTest {
     @Test
     fun normalizeStroke2() {
 
-        val outTensor = KdFTensor(13*50*3).reshape(13, 50, 3)
-        val target = StrokeTracker(outTensor)
+        val outTensor = io.github.karino2.tegashiki.KdFTensor(13 * 50 * 3).reshape(13, 50, 3)
+        val target = io.github.karino2.tegashiki.StrokeTracker(outTensor)
 
         val stroke = KdFTensorTest.createStrokeTensor(SHIFTED_STROKE_TEXT)
 

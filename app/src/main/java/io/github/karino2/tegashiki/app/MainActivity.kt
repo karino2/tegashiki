@@ -1,4 +1,4 @@
-package io.github.karino2.tegashiki
+package io.github.karino2.tegashiki.app
 
 import android.app.Dialog
 import android.content.ClipData
@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.stream.JsonWriter
+import io.github.karino2.tegashiki.R
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -103,7 +104,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateDialog(id: Int): Dialog {
         when(id) {
             DIALOG_ID_TEGASHIKI-> {
-                return TegashikiDialog(this).apply {
+                return io.github.karino2.tegashiki.TegashikiDialog(this).apply {
                     this.window!!.setGravity(Gravity.TOP)
                     this.window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                     // this.window!!.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -114,12 +115,12 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateDialog(id)
     }
 
-    lateinit var tegashikiDialog : TegashikiDialog
+    lateinit var tegashikiDialog : io.github.karino2.tegashiki.TegashikiDialog
 
     override fun onPrepareDialog(id: Int, dialog: Dialog) {
         when(id) {
             DIALOG_ID_TEGASHIKI -> {
-                tegashikiDialog = dialog as TegashikiDialog
+                tegashikiDialog = dialog as io.github.karino2.tegashiki.TegashikiDialog
                 tegashikiDialog.setCanceledOnTouchOutside(false)
                 tegashikiDialog.setCancelable(true)
                 tegashikiDialog.setOnDismissListener { finish() }

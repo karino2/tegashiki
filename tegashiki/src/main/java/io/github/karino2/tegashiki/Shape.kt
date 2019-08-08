@@ -94,7 +94,10 @@ class Shape(vararg val dimArray: Int) {
         // only one dimension, return [1] dimArray.
         if(resShape.size == 0) resShape.add(1)
 
-        return Indices(Shape(*resShape.toIntArray()), res)
+        return Indices(
+            Shape(*resShape.toIntArray()),
+            res
+        )
     }
 }
 

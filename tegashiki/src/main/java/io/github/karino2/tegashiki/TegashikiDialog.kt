@@ -1,7 +1,5 @@
 package io.github.karino2.tegashiki
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -10,7 +8,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +23,12 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
     var sendResultListener: (String)->Unit = {_->}
 
     val model by lazy { Model(context.assets) }
-    val strokeFloatTensor = KdFTensor(1* Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM).reshape(Model.MAX_STROKE_NUM, Model.MAX_ONE_STROKE_LEN, Model.INPUT_DIM)
+    val strokeFloatTensor = KdFTensor(1 * Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM)
+        .reshape(
+            Model.MAX_STROKE_NUM,
+            Model.MAX_ONE_STROKE_LEN,
+            Model.INPUT_DIM
+        )
     val strokeTracker by lazy {
         StrokeTracker(strokeFloatTensor)
     }

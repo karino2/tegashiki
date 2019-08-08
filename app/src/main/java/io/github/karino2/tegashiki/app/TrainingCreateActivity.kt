@@ -1,4 +1,4 @@
-package io.github.karino2.tegashiki
+package io.github.karino2.tegashiki.app
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.google.gson.stream.JsonWriter
+import io.github.karino2.tegashiki.R
 import java.io.File
 import java.io.FileWriter
 import java.text.SimpleDateFormat
@@ -18,7 +19,7 @@ class TrainingCreateActivity : AppCompatActivity() {
     val allStrokesList = ArrayList<ArrayList<List<Float>>>()
 
 
-    val strokeCanvas by lazy { findViewById<StrokeCanvas>(R.id.canvas)!! }
+    val strokeCanvas by lazy { findViewById<io.github.karino2.tegashiki.StrokeCanvas>(R.id.canvas)!! }
     fun onClearClick(v: View) {
         strokeCanvas.clearCanvas()
         currentStrokes.clear()

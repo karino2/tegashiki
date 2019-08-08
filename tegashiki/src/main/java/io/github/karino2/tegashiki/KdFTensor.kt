@@ -63,14 +63,14 @@ class KdFTensor(val size: Int) {
     }
 
 
-    fun reshape(vararg newShape: Int) : KdFTensor{
+    fun reshape(vararg newShape: Int) : KdFTensor {
         val newGuessedShape = Shape(*guessShape(shape.elementNum, newShape))
         myassert(shape.elementNum == newGuessedShape.elementNum)
         shape = newGuessedShape
         return this
     }
 
-    fun subTensor(indices: Indices) :KdFTensor {
+    fun subTensor(indices: Indices) : KdFTensor {
         val values = indices.indices.map { floatArray[it] }
         val res = KdFTensor(values)
         res.shape = indices.shape
@@ -156,13 +156,13 @@ class KdFTensor(val size: Int) {
     }
 
     operator fun times(scale: Float) : KdFTensor {
-        val res = KdFTensor(floatArray.map{it*scale}.toList())
+        val res = KdFTensor(floatArray.map { it * scale }.toList())
         res.shape = shape.clone()
         return res
     }
 
     operator fun minus(delta: Float) : KdFTensor {
-        val res = KdFTensor(floatArray.map{it-delta}.toList())
+        val res = KdFTensor(floatArray.map { it - delta }.toList())
         res.shape = shape.clone()
         return res
     }

@@ -1,15 +1,11 @@
 package io.github.karino2.tegashiki
 
 import android.content.res.AssetManager
-import android.util.Log
-import com.google.gson.JsonArray
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
-import java.nio.ByteBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
@@ -157,19 +153,17 @@ class Model(val assets: AssetManager) {
     }
 
    val inputStroke by lazy {
-        KdTensor(1* Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM)
+        KdTensor(1 * MAX_STROKE_NUM * MAX_ONE_STROKE_LEN * INPUT_DIM)
     }
 
     val inputDecoder by lazy {
-        KdTensor(1*MAX_TOKEN_LEN)
+        KdTensor(1 * MAX_TOKEN_LEN)
     }
 
     val predAnalyzer = PredictAnalyzer(DECODER_END_TOKEN, MAX_TOKEN_LEN)
 
-
-    val outputTensor = KdFTensor(1*MAX_TOKEN_LEN*VOCAB_SIZE).reshape(MAX_TOKEN_LEN, VOCAB_SIZE)
+    val outputTensor = KdFTensor(1 * MAX_TOKEN_LEN * VOCAB_SIZE).reshape(MAX_TOKEN_LEN, VOCAB_SIZE)
     val outputBuf = outputTensor.createMirrorBuf()
-
 
     fun predictInternal() : List<Int> {
         outputBuf.rewind()
@@ -185,7 +179,7 @@ class Model(val assets: AssetManager) {
 
         setupInput(strokeList)
 
-        repeat(Model.MAX_TOKEN_LEN) {
+        repeat(MAX_TOKEN_LEN) {
             if(!predAnalyzer.isEnd && !requestCancel) {
                 yield() // to check cancellation other than requestCancel.
 

@@ -18,7 +18,8 @@ class KdFTensorTest {
         }
 
         fun createStrokeTensor(target: String): KdFTensor {
-            val res = KdFTensor(Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM).reshape(
+            val res = KdFTensor(Model.MAX_STROKE_NUM * Model.MAX_ONE_STROKE_LEN * Model.INPUT_DIM)
+                .reshape(
                 Model.MAX_STROKE_NUM,
                 Model.MAX_ONE_STROKE_LEN,
                 Model.INPUT_DIM
@@ -162,7 +163,9 @@ class KdFTensorTest {
                 0.2f, 5f, 0f,
                 0.3f, 0.1f, 10f,
                 5f, 3f, 2f,
-                1f, 1f, 3f)).reshape(5, 3)
+                1f, 1f, 3f
+            )
+        ).reshape(5, 3)
 
         val classes = target.argMaxEachRaw.toList()
         assertEquals(2, classes[0])

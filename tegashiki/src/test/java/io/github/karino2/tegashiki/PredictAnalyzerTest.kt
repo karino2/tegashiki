@@ -1,11 +1,13 @@
 package io.github.karino2.tegashiki
 
+import org.junit.Assert.*
 import org.junit.Test
 
-import org.junit.Assert.*
-
 class PredictAnalyzerTest {
-    val target = PredictAnalyzer(Model.DECODER_END_TOKEN, Model.MAX_TOKEN_LEN)
+    val target = PredictAnalyzer(
+        Model.DECODER_END_TOKEN,
+        Model.MAX_TOKEN_LEN
+    )
 
     fun newDefault() = mutableListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 

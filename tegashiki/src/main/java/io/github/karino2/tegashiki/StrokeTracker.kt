@@ -83,13 +83,13 @@ class StrokeTracker(val outputTensor: KdFTensor) {
     }
 
     private fun reduceIfNecessary(xylistInput: List<Float>): List<Float> {
-        if(xylistInput.size < 2*Model.MAX_ONE_STROKE_LEN)
+        if(xylistInput.size < 2* Model.MAX_ONE_STROKE_LEN)
             return xylistInput
 
         // always divide by 2
         val posNum = xylistInput.size/2
 
-        val ratio = 2*posNum/Model.MAX_ONE_STROKE_LEN.toDouble()
+        val ratio = 2*posNum/ Model.MAX_ONE_STROKE_LEN.toDouble()
 
         val step = (ratio+0.5).toInt()
         val newSize = posNum/step
