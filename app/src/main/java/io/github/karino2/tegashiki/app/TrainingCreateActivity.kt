@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import com.google.gson.stream.JsonWriter
 import io.github.karino2.tegashiki.R
@@ -48,6 +49,7 @@ class TrainingCreateActivity : AppCompatActivity() {
         // save here.
         saveAll()
         allStrokesList.clear()
+        showCount(allStrokesList.size)
     }
 
     fun showMessage(msg:String) = Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
@@ -80,7 +82,13 @@ class TrainingCreateActivity : AppCompatActivity() {
         allStrokesList.add(currentStrokes)
         currentStrokes = ArrayList<List<Float>>()
         strokeCanvas.clearCanvas()
+        showCount(allStrokesList.size)
     }
+
+    fun showCount(num: Int) {
+        findViewById<TextView>(R.id.textViewCount).text = num.toString()
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
