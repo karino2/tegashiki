@@ -128,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                     copyToClipboard("\$\$$it\$\$")
                     showMessage("Copy tex to clipboard")
                 }
+                tegashikiDialog.startListening()
             }
         }
         super.onPrepareDialog(id, dialog)

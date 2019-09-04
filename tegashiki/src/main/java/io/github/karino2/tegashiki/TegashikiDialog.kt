@@ -58,7 +58,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
         resultTextView.text = ""
     }
 
-    val mainScope = MainScope()
+    var mainScope = MainScope()
 
     val channel = Channel<FloatArray>(Channel.CONFLATED)
     fun undo() {
@@ -81,6 +81,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
 
         setOnDismissListener {
             mainScope.cancel()
+            mainScope = MainScope()
         }
 
 
@@ -105,6 +106,10 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
             }
         }
 
+        super.onCreate(savedInstanceState)
+    }
+
+    fun startListening() {
         mainScope.launch {
             for(arr in channel){
                 val res = model.predict(arr)
@@ -114,9 +119,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
                 }
             }
         }
-
-
-
-        super.onCreate(savedInstanceState)
     }
+
+
 }
