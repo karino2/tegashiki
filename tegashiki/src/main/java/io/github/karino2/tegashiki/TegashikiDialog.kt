@@ -113,6 +113,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
     fun startListening() {
         mainScope.launch {
             for(arr in channel){
+                resultTextView.text = "(predicting...)"
                 val res = model.predict(arr)
                 if (!model.requestCancel) {
                     Log.d("Tegashiki", "final - $res")
