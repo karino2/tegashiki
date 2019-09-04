@@ -40,7 +40,8 @@ class StrokeTracker(val outputTensor: KdFTensor) {
             tensor_ns {
                 unnormalizeTensor[n(curIndex), all, all] = 0f
                 outputTensor[n(curIndex), all, all] = 0f
-                normalizeTensor()
+                if(curIndex != 0)
+                    normalizeTensor()
             }
         }
     }
