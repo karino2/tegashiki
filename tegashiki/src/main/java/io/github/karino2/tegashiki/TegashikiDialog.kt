@@ -81,6 +81,7 @@ class TegashikiDialog(context: Context) : AlertDialog(context) {
 
         setOnDismissListener {
             mainScope.cancel()
+            clearAll()
             mainScope = MainScope()
         }
 
